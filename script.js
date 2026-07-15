@@ -1,300 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Dusk Dash</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
-
-  :root{
-    --sky-top:#160f2e;
-    --sky-mid:#6a2c5c;
-    --sky-low:#ff7a4a;
-    --sun:#ffd166;
-    --ground:#1b1330;
-    --ground-line:#ff9e5e;
-    --silhouette:#100b1f;
-    --cream:#f7ecd9;
-    --boost:#ff5e62;
-    --brake:#7c9fff;
-    --panel:rgba(16,11,25,0.78);
-  }
-
-  *{box-sizing:border-box;}
-
-  body{
-    margin:0;
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#0a0712;
-    font-family:'Inter',sans-serif;
-    color:var(--cream);
-    padding:18px;
-  }
-
-  .arcade{
-    width:100%;
-    max-width:920px;
-  }
-
-  .cab{
-    position:relative;
-    width:100%;
-    aspect-ratio:900/320;
-    border-radius:14px;
-    overflow:hidden;
-    box-shadow:0 0 0 2px rgba(255,158,94,0.25), 0 20px 60px rgba(0,0,0,0.55), 0 0 40px rgba(255,94,98,0.08);
-    background:var(--sky-top);
-  }
-
-  canvas{
-    display:block;
-    width:100%;
-    height:100%;
-  }
-
-  /* ---------- HUD ---------- */
-  .hud{
-    position:absolute;
-    top:0; left:0; right:0;
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    padding:10px 14px;
-    pointer-events:none;
-    z-index:5;
-  }
-
-  .score-block{ text-align:left; }
-  .score-label{
-    font-size:10px;
-    letter-spacing:0.18em;
-    opacity:0.65;
-    text-transform:uppercase;
-  }
-  .score-value{
-    font-family:'Bebas Neue',sans-serif;
-    font-size:30px;
-    letter-spacing:0.03em;
-    line-height:1;
-    color:var(--cream);
-    text-shadow:0 2px 8px rgba(0,0,0,0.5);
-  }
-  .best-value{
-    font-family:'Bebas Neue',sans-serif;
-    font-size:14px;
-    opacity:0.55;
-    letter-spacing:0.05em;
-  }
-
-  .status-block{
-    text-align:right;
-    display:flex;
-    flex-direction:column;
-    align-items:flex-end;
-    gap:4px;
-  }
-  .speed-chip{
-    font-family:'Bebas Neue',sans-serif;
-    font-size:13px;
-    letter-spacing:0.08em;
-    padding:3px 10px;
-    border-radius:20px;
-    background:rgba(255,255,255,0.08);
-    color:var(--cream);
-    border:1px solid rgba(255,255,255,0.15);
-    transition:background .15s, color .15s, border-color .15s;
-  }
-  .speed-chip.boost{ background:rgba(255,94,98,0.18); color:var(--boost); border-color:rgba(255,94,98,0.5);}
-  .speed-chip.brake{ background:rgba(124,159,255,0.18); color:var(--brake); border-color:rgba(124,159,255,0.5);}
-
-  .mute-btn{
-    pointer-events:all;
-    cursor:pointer;
-    background:rgba(255,255,255,0.08);
-    border:1px solid rgba(255,255,255,0.15);
-    color:var(--cream);
-    border-radius:50%;
-    width:26px;height:26px;
-    font-size:13px;
-    display:flex;align-items:center;justify-content:center;
-  }
-
-  /* ---------- Overlays ---------- */
-  .overlay{
-    position:absolute;
-    inset:0;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    background:var(--panel);
-    backdrop-filter:blur(2px);
-    z-index:10;
-    gap:10px;
-    padding:16px;
-    transition:opacity .2s ease;
-  }
-  .overlay.hidden{ display:none; }
-
-  .title{
-    font-family:'Bebas Neue',sans-serif;
-    font-size:clamp(36px,7vw,56px);
-    letter-spacing:0.06em;
-    color:var(--cream);
-    margin:0;
-    text-shadow:0 0 18px rgba(255,158,94,0.45);
-  }
-  .title span{ color:var(--boost); }
-
-  .subtitle{
-    font-size:13px;
-    opacity:0.8;
-    margin:0 0 6px;
-    max-width:420px;
-  }
-
-  .gameover-title{
-    font-family:'Bebas Neue',sans-serif;
-    font-size:clamp(32px,6.5vw,48px);
-    color:var(--boost);
-    letter-spacing:0.08em;
-    margin:0;
-  }
-  .final-score{
-    font-family:'Bebas Neue',sans-serif;
-    font-size:22px;
-    margin:0;
-  }
-  .final-score b{ color:var(--sun); }
-
-  .keys-row{
-    display:flex;
-    gap:14px;
-    margin-top:6px;
-    flex-wrap:wrap;
-    justify-content:center;
-  }
-  .key-hint{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:4px;
-    font-size:10px;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-    opacity:0.85;
-  }
-  .key-cap{
-    width:34px;height:34px;
-    border-radius:8px;
-    background:rgba(255,255,255,0.1);
-    border:1px solid rgba(255,255,255,0.2);
-    display:flex;align-items:center;justify-content:center;
-    font-size:16px;
-  }
-  .key-cap.up{ color:var(--cream); }
-  .key-cap.down{ color:var(--cream); }
-  .key-cap.right{ color:var(--boost); border-color:rgba(255,94,98,0.45); }
-  .key-cap.left{ color:var(--brake); border-color:rgba(124,159,255,0.45); }
-
-  .press-hint{
-    font-size:12px;
-    opacity:0.7;
-    margin-top:4px;
-    animation:pulse 1.6s ease-in-out infinite;
-  }
-  @keyframes pulse{ 0%,100%{opacity:.45;} 50%{opacity:.9;} }
-
-  /* ---------- Touch controls ---------- */
-  .touch-controls{
-    position:absolute;
-    bottom:10px;
-    left:0; right:0;
-    display:flex;
-    justify-content:center;
-    gap:10px;
-    z-index:6;
-  }
-  .touch-btn{
-    width:46px;height:46px;
-    border-radius:12px;
-    background:rgba(255,255,255,0.1);
-    border:1px solid rgba(255,255,255,0.2);
-    color:var(--cream);
-    font-size:18px;
-    display:flex;align-items:center;justify-content:center;
-    -webkit-tap-highlight-color:transparent;
-    user-select:none;
-    touch-action:none;
-  }
-  .touch-btn:active{ background:rgba(255,255,255,0.25); }
-  .touch-btn.right{ color:var(--boost); }
-  .touch-btn.left{ color:var(--brake); }
-
-  .credit{
-    text-align:center;
-    font-size:11px;
-    opacity:0.4;
-    margin-top:8px;
-  }
-
-  @media (hover:hover) and (pointer:fine){
-    .touch-controls{ display:none; }
-  }
-</style>
-</head>
-<body>
-
-<div class="arcade">
-  <div class="cab" id="cab">
-    <canvas id="game"></canvas>
-
-    <div class="hud">
-      <div class="score-block">
-        <div class="score-label">Score</div>
-        <div class="score-value" id="scoreVal">0</div>
-        <div class="best-value" id="bestVal">BEST 0</div>
-      </div>
-      <div class="status-block">
-        <div class="mute-btn" id="muteBtn">🔈</div>
-        <div class="speed-chip" id="speedChip">x1</div>
-      </div>
-    </div>
-
-    <div class="overlay" id="startOverlay">
-      <h1 class="title">DUSK <span>DASH</span></h1>
-      <p class="subtitle">Jog into the sunset. Jump the critters, duck the geese, and play with your pace — push it for big points or ease off to stay alive.</p>
-      <div class="keys-row">
-        <div class="key-hint"><div class="key-cap up">▲</div>Jump</div>
-        <div class="key-hint"><div class="key-cap down">▼</div>Duck / Dive</div>
-        <div class="key-hint"><div class="key-cap left">◀</div>Brake</div>
-        <div class="key-hint"><div class="key-cap right">▶</div>Boost</div>
-      </div>
-      <div class="press-hint">Press ▲ or SPACE to start</div>
-    </div>
-
-    <div class="overlay hidden" id="overOverlay">
-      <h1 class="gameover-title">CAUGHT YOU</h1>
-      <p class="final-score">Score <b id="finalScore">0</b> &nbsp;·&nbsp; Best <b id="finalBest">0</b></p>
-      <div class="press-hint">Press ▲ or SPACE to run again</div>
-    </div>
-
-    <div class="touch-controls">
-      <div class="touch-btn left" id="tLeft">◀</div>
-      <div class="touch-btn" id="tDown">▼</div>
-      <div class="touch-btn" id="tUp">▲</div>
-      <div class="touch-btn right" id="tRight">▶</div>
-    </div>
-  </div>
-  <div class="credit">Arrow keys: ▲ jump · ▼ duck/dive · ◀ brake · ▶ boost</div>
-</div>
-
-<script>
 (function(){
   "use strict";
 
@@ -438,8 +141,6 @@
   function drawGroundDashes(offset){
     ctx.fillStyle = 'rgba(255,158,94,0.35)';
     const gap = 46, w = 20;
-    // offset is always <= 0 (it only decreases), so offset % gap is already in (-gap, 0]
-    // and tracks offset directly -> dashes scroll the same way obstacles do (right to left).
     let start = offset % gap;
     for(let x=start; x<LOGICAL_W; x+=gap){
       ctx.fillRect(x, GROUND_Y+14, w, 3);
@@ -660,6 +361,11 @@
   let nextSpawnGap = 320;
   let dashOffset = 0, bgTime = 0;
   let lastTickScore = 0;
+  
+  // Auto-speed increase variables
+  let gameTime = 0;
+  const AUTO_SPEED_INCREASE_RATE = 0.8; // Speed increase per second
+  const AUTO_SPEED_CAP = 400; // Maximum auto-speed increase
 
   const startOverlay = document.getElementById('startOverlay');
   const overOverlay = document.getElementById('overOverlay');
@@ -677,6 +383,7 @@
     player.vy = 0; player.jumping = false; player.ducking = false;
     player.onGround = true; player.runPhase = 0;
     lastTickScore = 0;
+    gameTime = 0; // Reset game time
   }
 
   function startGame(){
@@ -755,9 +462,15 @@
 
   function update(dt){
     bgTime += dt;
+    gameTime += dt; // Track total game time
+    
+    // Auto-speed increase - gradually increases base speed over time
+    const autoSpeedBonus = Math.min(gameTime * AUTO_SPEED_INCREASE_RATE, AUTO_SPEED_CAP);
+    const baseSpeedWithAuto = BASE_SPEED + autoSpeedBonus;
+    
     const speedMult = currentSpeedMultiplier();
     const scoreMult = currentScoreMultiplier();
-    const targetSpeed = Math.min(BASE_SPEED + Math.min(score,4500)*0.03, MAX_SPEED/1.5) * speedMult;
+    const targetSpeed = Math.min(baseSpeedWithAuto + Math.min(score,4500)*0.03, MAX_SPEED) * speedMult;
     speed += (targetSpeed - speed)*Math.min(1, dt*4);
     speed = Math.max(110, Math.min(speed, MAX_SPEED));
 
@@ -817,12 +530,20 @@
     // HUD text
     scoreVal.textContent = Math.floor(score);
     bestVal.textContent = 'BEST ' + Math.max(best, Math.floor(score));
+    
+    // Show auto-speed increase in HUD
+    const autoSpeedBonus = Math.min(gameTime * AUTO_SPEED_INCREASE_RATE, AUTO_SPEED_CAP);
+    const autoSpeedDisplay = Math.floor(autoSpeedBonus / 10) * 10; // Round to nearest 10
+    
     if(keys.right && !keys.left){
-      speedChip.textContent = 'BOOST ×2'; speedChip.className='speed-chip boost';
+      speedChip.textContent = `BOOST ×2 [+${autoSpeedDisplay}]`;
+      speedChip.className='speed-chip boost';
     } else if(keys.left && !keys.right){
-      speedChip.textContent = 'BRAKE ×0.5'; speedChip.className='speed-chip brake';
+      speedChip.textContent = `BRAKE ×0.5 [+${autoSpeedDisplay}]`;
+      speedChip.className='speed-chip brake';
     } else {
-      speedChip.textContent = '×1'; speedChip.className='speed-chip';
+      speedChip.textContent = `×1 [+${autoSpeedDisplay}]`;
+      speedChip.className='speed-chip';
     }
   }
 
@@ -851,6 +572,3 @@
   requestAnimationFrame(loop);
 
 })();
-</script>
-</body>
-</html>

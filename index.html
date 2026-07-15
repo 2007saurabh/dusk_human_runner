@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dusk Dash</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="arcade">
+  <div class="cab" id="cab">
+    <canvas id="game"></canvas>
+
+    <div class="hud">
+      <div class="score-block">
+        <div class="score-label">Score</div>
+        <div class="score-value" id="scoreVal">0</div>
+        <div class="best-value" id="bestVal">BEST 0</div>
+      </div>
+      <div class="status-block">
+        <div class="mute-btn" id="muteBtn">🔈</div>
+        <div class="speed-chip" id="speedChip">x1</div>
+      </div>
+    </div>
+
+    <div class="overlay" id="startOverlay">
+      <h1 class="title">DUSK <span>DASH</span></h1>
+      <p class="subtitle">Jog into the sunset. Jump the critters, duck the geese, and play with your pace — push it for big points or ease off to stay alive.</p>
+      <div class="keys-row">
+        <div class="key-hint"><div class="key-cap up">▲</div>Jump</div>
+        <div class="key-hint"><div class="key-cap down">▼</div>Duck / Dive</div>
+        <div class="key-hint"><div class="key-cap left">◀</div>Brake</div>
+        <div class="key-hint"><div class="key-cap right">▶</div>Boost</div>
+      </div>
+      <div class="press-hint">Press ▲ or SPACE to start</div>
+    </div>
+
+    <div class="overlay hidden" id="overOverlay">
+      <h1 class="gameover-title">CAUGHT YOU</h1>
+      <p class="final-score">Score <b id="finalScore">0</b> &nbsp;·&nbsp; Best <b id="finalBest">0</b></p>
+      <div class="press-hint">Press ▲ or SPACE to run again</div>
+    </div>
+
+    <div class="touch-controls">
+      <div class="touch-btn left" id="tLeft">◀</div>
+      <div class="touch-btn" id="tDown">▼</div>
+      <div class="touch-btn" id="tUp">▲</div>
+      <div class="touch-btn right" id="tRight">▶</div>
+    </div>
+  </div>
+  <div class="credit">Arrow keys: ▲ jump · ▼ duck/dive · ◀ brake · ▶ boost</div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
